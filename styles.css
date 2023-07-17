@@ -1,0 +1,64 @@
+
+
+.player-container {
+  display: flex;
+  flex-direction: column;
+  align-items: space-around;   
+  justify-content: flex-start;
+  width: 1000px;
+  height: 200px;
+  background-color: lightgray;
+  margin: 10px;
+}
+
+.opponent-container {
+  display: flex;
+  flex-direction: column;
+  align-items: space-around;   
+  justify-content: flex-start;
+  width: 1000px;
+  height: 200px;
+  background-color: lightgray;
+  margin: 10px;
+}
+
+.hand-container {
+	flex: 1;
+}
+
+.discard-container {
+	flex: 1;
+	text-align: right;
+}
+
+.tile-img{
+  width: 30px;
+  height: 40px;
+  border: 1px solid black;
+  background-color: white;
+}
+
+/*
+.opponent-info {
+  display: flex;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+*/
+.flexrow {
+	display: flex;
+}
+
+.opponent-name {
+  flex: 1;
+}
+
+.opponent-wind {
+  flex: 1;
+  text-align: center;
+}
+
+.opponent-points {
+  flex: 1;
+  text-align: right;
+}
