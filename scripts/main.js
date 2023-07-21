@@ -2,27 +2,29 @@
 
 var tilesPerHand = 13;  // Does not include the extra tile for full hand
 var actors = [];
+var playerTiles = document.querySelectorAll('.player-tile');
+let selectedTile = null;
+const arrow = document.querySelector('#tile-arrow');
 
 // Define the deck of tiles
 var deck = [];
 
-// Valid suits
+// Valid suits, note this is the order suits will be sorted into
 var validSuits = [
-                    'animal', 
-                    'art', 
-					'bamboo', 
-					'character', 
-					'clown',
+                    'bamboo',
+					'character',
 					'dot',
+					'wind',
 					'dragon',
-					'emperor',
 					'flower',
+					'season',
 					'joker',
+					'animal', 
+                    'art', 
+					'clown',
+					'emperor',
 					'profession',
 					'queen',
-					'season',
-					'tile',
-					'wind'
 					]
 
 
@@ -33,7 +35,7 @@ class Actor {
     this.wind = 'northeast';
     this.points = 69;
 	this.hand = [];
-	this.openTiles = [];
+	this.melds = [];
 	this.discards = [];
   }
   
@@ -43,6 +45,23 @@ class Actor {
 		  print_list.push(tileArray[i].shorthand)
 	  }
 	  return print_list;
+  }
+  
+  // compare function for sort, takes two tile objects
+  compareTiles(a,b) {
+	const suitIndexA = validSuits.indexOf(a.suit);
+	const suitIndexB = validSuits.indexOf(b.suit);
+
+    if (suitIndexA !== suitIndexB) {
+      return suitIndexA - suitIndexB;
+    }
+	
+	// If the suits are the same, compare the numbers
+    return a.number - b.number;
+  }
+  
+  sortHand() {
+	this.hand.sort(this.compareTiles);
   }
 }
 
@@ -129,43 +148,111 @@ function drawTile() {
   return deck.pop();
 }
 
-
 // Render player information in player containers
-function renderOpponentInformation(opponentIndex, opponent) {
-  const opponentContainer = document.querySelector(`#opponent${opponentIndex}-container`);
-  const opponentName = opponentContainer.querySelector('.opponent-name');
-  const opponentWind = opponentContainer.querySelector('.opponent-wind');
-  const opponentPoints = opponentContainer.querySelector('.opponent-points');
-  const opponentHand = opponentContainer.querySelector('.hand-container');
+function renderActorInformation(actorContainer, actor) {
+  const actorName = actorContainer.querySelector('.actor-name');
+  const actorWind = actorContainer.querySelector('.actor-wind');
+  const actorPoints = actorContainer.querySelector('.actor-points');
+  const actorHand = actorContainer.querySelector('.actor-hand');
+  const actorDiscard = actorContainer.querySelector('.actor-discard');
+  const actorMeld = actorContainer.querySelector('.actor-meld');
 
-  opponentName.textContent = opponent.name;
-  opponentWind.textContent = opponent.wind;
-  opponentPoints.textContent = `Points: ${opponent.points}`;
+  actorName.textContent = actor.name;
+  actorWind.textContent = actor.wind;
+  actorPoints.textContent = `Points: ${actor.points}`;
   
-  renderHand(opponentHand, opponent.hand)
+  renderTiles(actorHand, actor.hand);
+  renderTiles(actorDiscard, actor.discards);
+  renderTiles(actorMeld, actor.melds);
 }
 
-
 // Draw the tile images for a player's hand
-function renderHand(handContainer, hand) {
-// handContainer is the container to render the hand,
-// hand is an array of tile objects
-  // const playerHandContainer = document.getElementById(`player${player}-hand`);
-  // playerHandContainer.innerHTML = '';
-  
-  
+function renderTiles(tileContainer, tiles) {
+// tileContainer is the container to render the hand,
+// tiles is an array of tile objects
 
-  hand.forEach(tile => {
+  tiles.forEach(tile => {
     const tileImg = document.createElement('img');
     tileImg.src = tile.imagePath;
-    tileImg.alt = tile;
-	tileImg.className = "tile-img";
-    handContainer.appendChild(tileImg);
+    tileImg.alt = tile.shorthand;
+	tileImg.classList.add('tile-img');
+    tileContainer.appendChild(tileImg);
   });
 }
 
 
+// for rearrange hand, currently not used
+function activateHand(playerHand) {
+	
+	playerTiles = playerHand.querySelectorAll('.tile-img');
+	
+	playerTiles.forEach(tile => {
 
+ 		tile.addEventListener('click', () => {
+
+			if (selectedTile === tile) {
+		    	// If the clicked tile is already selected, deselect it
+		    	tile.classList.remove('selected');
+		    	selectedTile = null;
+		    	arrow.style.display = 'none';
+				console.log('deselected tile')
+		    } else {
+		    	// Select the clicked tile
+		    	tile.classList.add('selected');
+		    	selectedTile = tile;
+		    	arrow.style.display = 'block';
+				console.log('selected tile ', selectedTile);
+		    	updateArrowPosition();
+		    } 
+		});  
+		
+	});
+}
+
+// for rearrange hand, currently not used
+function selectTile(tile) {
+	if (selectedTile === tile) {
+		// Card is already selected so reorder it
+		const handContainer = document.querySelector('#player-hand');
+		const rect = handContainer.getBoundingClientRect();
+		const mouseX = event.clientX - rect.left;
+		
+		let closestCard = null;
+		let minDistance = Number.MAX_SAFE_INTEGER;
+	
+		cards.forEach((card) => {
+			const cardRect = cardElement.getBoundingClientRect();
+			const cardX = cardRect.left - rect.left + cardRect.width / 2;
+			const distance = Math.abs(mouseX - cardX);
+		
+			if (distance < minDistance) {
+				minDistance = distance;
+				closestCard = card;
+			}
+		});
+	}
+}
+
+// for rearrange hand, currently not used
+function updateArrowPosition() {
+  // Get the position of the arrow relative to the container
+  console.log('arrow on');
+  const containerRect = document.querySelector('.tile-container').getBoundingClientRect();
+  const cardRect = selectedTile.getBoundingClientRect();
+  const arrowPosition = cardRect.left - containerRect.left + cardRect.width / 2;
+  
+  // Update the arrow position
+  arrow.style.left = arrowPosition + 'px';
+}
+
+
+function renderAll(){
+
+  renderActorInformation(document.querySelector(`#player-container`), actors[0])
+  renderActorInformation(document.querySelector(`#opponent1-container`), actors[1])
+  renderActorInformation(document.querySelector(`#opponent2-container`), actors[2])
+  renderActorInformation(document.querySelector(`#opponent3-container`), actors[3])
+}
 
 
 // Initialize the game
@@ -195,15 +282,18 @@ function initializeGame() {
         actors[i].hand.push(tile);
       }
     }
+	actors[i].sortHand();
     console.log(`Player ${i}: ${actors[i].name}'s hand:`, actors[i].listTiles(actors[i].hand));
   }
   
-  renderOpponentInformation(1, actors[1])
-  renderOpponentInformation(2, actors[2])
-  renderOpponentInformation(3, actors[3])
+  renderAll();
+  // activateHand(document.querySelector('#player-hand'));
   
 }
 
 
+
 // Call the initializeGame function to start the game
 initializeGame();
+
+
