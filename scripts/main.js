@@ -2,6 +2,10 @@
 
 var tilesPerHand = 13;  // Does not include the extra tile for full hand
 var actors = [];
+var dealerPlayer = 0;
+var activePlayer = 0;
+
+// Variables that were used for handRearrange()
 var playerTiles = document.querySelectorAll('.player-tile');
 let selectedTile = null;
 const arrow = document.querySelector('#tile-arrow');
@@ -27,13 +31,21 @@ var validSuits = [
 					'queen',
 					]
 
+// Flower suits, tiles will be insta-melded and new tile drawn
+var flowerSuits = [
+					'flower',
+					'season',
+					]
+
+
 
 // Actor class
 class Actor {
-  constructor(name) {
+  constructor(name, wind, points) {
     this.name = name;
-    this.wind = 'northeast';
-    this.points = 69;
+	// wind note 1: east, 2: south, 3: west, 4: north
+    this.wind = wind;
+    this.points = points;
 	this.hand = [];
 	this.melds = [];
 	this.discards = [];
@@ -46,6 +58,9 @@ class Actor {
 	  }
 	  return print_list;
   }
+  
+  
+  // To do this.draw(), it's just: this.hand.push(drawTile())
   
   // compare function for sort, takes two tile objects
   compareTiles(a,b) {
@@ -148,7 +163,15 @@ function drawTile() {
   return deck.pop();
 }
 
-// Render player information in player containers
+function nextPlayer(){
+	const containers = document.querySelectorAll('.actor-container');
+	containers[activePlayer].classList.remove('active-container');
+	activePlayer++;
+	activePlayer = activePlayer%4;
+	containers[activePlayer].classList.add('active-container');
+}
+
+// Render actor information in actor containers
 function renderActorInformation(actorContainer, actor) {
   const actorName = actorContainer.querySelector('.actor-name');
   const actorWind = actorContainer.querySelector('.actor-wind');
@@ -158,15 +181,19 @@ function renderActorInformation(actorContainer, actor) {
   const actorMeld = actorContainer.querySelector('.actor-meld');
 
   actorName.textContent = actor.name;
-  actorWind.textContent = actor.wind;
   actorPoints.textContent = `Points: ${actor.points}`;
+  
+  const windImg = document.createElement('img');
+  const windSrc = `tiles/wind/${actor.wind.toString().padStart(2,'0')}.svg`;
+  actorWind.innerHTML = `<img src=${windSrc} class='actor-wind-img'>`;
+  
   
   renderTiles(actorHand, actor.hand);
   renderTiles(actorDiscard, actor.discards);
   renderTiles(actorMeld, actor.melds);
 }
 
-// Draw the tile images for a player's hand
+// Draw the tile images for a actor's tile container (eg. hand, discards, melds)
 function renderTiles(tileContainer, tiles) {
 // tileContainer is the container to render the hand,
 // tiles is an array of tile objects
@@ -179,7 +206,6 @@ function renderTiles(tileContainer, tiles) {
     tileContainer.appendChild(tileImg);
   });
 }
-
 
 // for rearrange hand, currently not used
 function activateHand(playerHand) {
@@ -252,21 +278,32 @@ function renderAll(){
   renderActorInformation(document.querySelector(`#opponent1-container`), actors[1])
   renderActorInformation(document.querySelector(`#opponent2-container`), actors[2])
   renderActorInformation(document.querySelector(`#opponent3-container`), actors[3])
+  
+  // Add dealer notifier
+  const dealer = document.querySelectorAll(`.actor-container`)[dealerPlayer];
+  dealer.querySelector('.actor-wind-img').classList.add('actor-wind-dealer');
 }
 
 
 // Initialize the game
 function initializeGame() {
-  // Create actors
   
-  actors = [
-            new Actor('sjmc'), 
-            new Actor('sincoew'), 
-			new Actor('yamuda'), 
-			new Actor('bengineer')
-			]
-  // const opponent1 = new Actor('sincoew');     // old way
-
+  // initialise players:
+  const sitDown = [
+					 ['sjmc', 60]
+					,['sincoew', 90]
+					,['yamuda', 420]
+					,['CHAD', 100]
+					];
+  // Randomise dealer
+  dealerPlayer = Math.floor(Math.random()*4);
+  activePlayer=dealerPlayer;
+  
+  // Create actors
+  for (i in sitDown){
+	  actors.push(new Actor(sitDown[i][0],(i-dealerPlayer+4)%4+1,sitDown[i][1]))
+  }
+  
 
   // Create deck
   createDeck(true, false, false);
@@ -275,17 +312,27 @@ function initializeGame() {
   shuffleDeck(deck);
 
   // Draw 13 tiles for each player
-  for (i in actors) {
-    for (let j = 0; j < tilesPerHand; j++) {
-      const tile = drawTile();
-      if (tile) {
-        actors[i].hand.push(tile);
-      }
-    }
-	actors[i].sortHand();
-    console.log(`Player ${i}: ${actors[i].name}'s hand:`, actors[i].listTiles(actors[i].hand));
+  while (actors[(dealerPlayer+3)%4].hand.length<tilesPerHand) {
+	  var tile = drawTile();
+	  
+	  while (flowerSuits.includes(tile.suit)){      // Insta-meld flowers
+		  actors[activePlayer].melds.push(tile);
+		  tile = drawTile();
+	  }
+	  
+	  actors[activePlayer].hand.push(tile);
+	  nextPlayer();
   }
   
+  // Sort everyone's hand
+  for (i in actors){
+	  actors[i].sortHand();
+	  console.log(`Player ${i}: ${actors[i].name}'s hand:`, actors[i].listTiles(actors[i].hand))
+  }
+  
+  // Log game initialisation
+  console.log('Dealer:', dealerPlayer);
+
   renderAll();
   // activateHand(document.querySelector('#player-hand'));
   

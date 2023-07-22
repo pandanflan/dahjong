@@ -20,12 +20,29 @@
   <div class="play-space">
   
     <div class="action-area">
-	<span id="game-statement">It's your turn!</span>
+	  <div id="left-panel">
+	    <img src="tiles/wind/01.svg" alt="wind" class="round-wind">
+	  </div>
+	  <div id="center-panel">
+	    <span>It's your turn!</span>
+		<span>XXX just discarded a:</span>
+		<img src="tiles/dot/07.svg" class="tile-img">
+		<div id="button-row" class="flexrow">
+	      <button>Seung</button>
+	      <button>Pong</button>
+	      <button>Gong</button>
+	      <button>Sik</button>
+		 </div>
+	  </div>
+	  <div id="right-panel">
+	    <button id="draw-button">Draw</button>
+	  </div>
+	  
 	</div>
 	<div id="player-container" class="actor-container player-container">
 	  <div id="actor-info" class="flexrow">
-	    <span class="actor-name">Player 1</span>
         <span class="actor-wind">southwest</span>
+		<span class="actor-name">Player 1</span>
         <span class="actor-points">5321</span>
 	  </div>
 	  <div id="player-tiles" class="actor-grid">
@@ -45,8 +62,8 @@
     <div class="opponent-stack">
       <div id="opponent1-container" class="actor-container opponent-container">
 	    <div id="actor-info" class="flexrow">
-          <span class="actor-name">Player 1</span>
 		  <span class="actor-wind">EAST</span>
+          <span class="actor-name">Player 1</span>
 		  <span class="actor-points">12345</span>
 		</div>
         <div id="opponent1-tiles" class="actor-grid">
@@ -63,8 +80,8 @@
       </div>
       <div id="opponent2-container" class="actor-container opponent-container">
 	    <div id="actor-info" class="flexrow">
-          <span class="actor-name">Player 1</span>
 		  <span class="actor-wind">EAST</span>
+          <span class="actor-name">Player 1</span>
 		  <span class="actor-points">12345</span>
 		</div>
         <div id="opponent2-tiles" class="actor-grid">
@@ -81,8 +98,8 @@
       </div>
       <div id="opponent3-container" class="actor-container opponent-container">
 	    <div id="actor-info" class="flexrow">
-          <span class="actor-name">Player 1</span>
 		  <span class="actor-wind">EAST</span>
+          <span class="actor-name">Player 1</span>
 		  <span class="actor-points">12345</span>
 		</div>
         <div id="opponent3-tiles" class="actor-grid">
