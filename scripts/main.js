@@ -73,6 +73,8 @@ class GameManager {
 		this.activePlayer = null;
 		this.deck = [];
 		this.gameState = 0;  
+		this.activeTile = null;
+		this.drawnTile = null;
 		
 	}
 	
@@ -182,22 +184,24 @@ class GameManager {
 	}
 
 	gameLoop(){
+		
+		
 		while (this.gameState<90){
 			
-			// Draw a tile
-			let tile = this.drawTile();
+			// Game loop needs to start with player selecting a discard
+			this.activeTile = this.actors[activePlayer].discardTile();
 			
 			
-			// move tile to limbo
-			let tile = this.playTurn(this.activePlayer, tile);
+		/*  	// move tile to limbo
+			let tile = this.playTurn(this.activePlayer, tile); */ 
 			
 			// check sik
 			var sikResult;
 			for (let p_to_check of [0, 1, 2, 3].filter((pl) => pl != this.activePlayer)){
-				sikResult = checkSik(tile, this.actors[p_to_check].hand);
+				sikResult = checkSik(this.activeTile, this.actors[p_to_check].hand);
 			}
 			// if sik available
-			let sikked = this.offerSik(sikResult, tile);
+			let sikked = this.offerSik(sikResult, this.activeTile);
 			
 			// end game by repeating loop
 			if(sikked){
@@ -208,22 +212,27 @@ class GameManager {
 			// check pongs
 			var pongResult;
 			for (let p_to_check of [0, 1, 2, 3].filter((pl) => pl != this.activePlayer)){
-				pongResult = checkPong(tile, this.actors[p_to_check].hand);
+				pongResult = checkPong(this.activeTile, this.actors[p_to_check].hand);
 			}
 			// if pong available
-			let ponged = this.offerPong(pongResult, tile);
-			
+			let ponged = this.offerPong(pongResult, this.activeTile);
+			if(ponged){
+				continue;
+			}
 			
 			
 			// check seung
 			var seungResult;
-			seungResult = checkSeung(tile, this.actors[(activePlayer+1)%4])
+			seungResult = checkSeung(this.activeTile, this.actors[(activePlayer+1)%4])
 			// if seung available
-			this.offerSeung(sikResult, tile)
+			let seunged = this.offerSeung(sikResult, this.activeTile);
+			if(seunged){
+				continue;
+			}
 			
 			
 			// if no opponent melds, tile goes from limbo to player's discard
-			this.actors[activePlayer].discards.push(tile);
+			this.actors[activePlayer].discards.push(this.activeTile);
 			
 			// check for empty deck
 			if (this.deck.length == 0) {
@@ -234,10 +243,12 @@ class GameManager {
 			// switch player
 			nextPlayer();
 			
-			
+			// draw tile to show next player
+			this.drawnTile = this.drawTile();
+			this.offerTile()  // offer this.drawnTile to this.actors[activePlayer]
 		}
 		
-		gameEnd(someVariable);
+		gameEnd( );
 	}
 	
 	playTurn(player){
