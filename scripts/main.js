@@ -149,9 +149,14 @@ class GameManager {
 		
 		// Create actors
 		this.actors = []; 
-		for (let i in sitDown){
-			this.actors.push(new Actor(sitDown[i][0],(i-this.dealerPlayer+4)%4+1,sitDown[i][1]))
-		}
+		this.actors.push(new HumanPlayer(sitDown[0][0],(4-this.dealerPlayer)%4+1,sitDown[0][1]))
+		this.actors.push(new AIPlayer(sitDown[1][0],(5-this.dealerPlayer)%4+1,sitDown[1][1]))
+		this.actors.push(new AIPlayer(sitDown[2][0],(6-this.dealerPlayer)%4+1,sitDown[2][1]))
+		this.actors.push(new AIPlayer(sitDown[3][0],(7-this.dealerPlayer)%4+1,sitDown[3][1]))
+		
+		//for (let i in sitDown){
+		//	this.actors.push(new Actor(sitDown[i][0],(i-this.dealerPlayer+4)%4+1,sitDown[i][1]))
+		//}
 		
 		// Create new deck and shuffle
 		this.deck = [];
@@ -189,7 +194,7 @@ class GameManager {
 		while (this.gameState<90){
 			
 			// Game loop needs to start with player selecting a discard
-			this.activeTile = this.actors[activePlayer].discardTile();
+			this.activeTile = this.actors[activePlayer].selectDiscard();
 			
 			
 		/*  	// move tile to limbo
@@ -277,6 +282,7 @@ class GameManager {
 
 }
 
+
 // Actor class
 class Actor {
   constructor(name, wind, points) {
@@ -299,9 +305,8 @@ class Actor {
   
   
   // To do this.draw(), it's just: this.hand.push(drawTile())
-  
-  // compare function for sort, takes two tile objects
-  compareTiles(a,b) {
+
+  compareTiles(a,b) { // compare function for sort, takes two tile objects
 	const suitIndexA = validSuits.indexOf(a.suit);
 	const suitIndexB = validSuits.indexOf(b.suit);
 
@@ -332,6 +337,24 @@ class Actor {
 	  
 	  
   }
+  
+  selectDiscard() { // This is an abstract method that will be implemented differently in subclasses
+        throw new Error("selectDiscard() must be implemented in subclass");
+  }
+}
+
+// Actor/HumanPlayer class
+class HumanPlayer extends Actor {
+	selectDiscard(){
+		//logic for prompting player
+	}
+}
+
+// Actor/HumanPlayer class
+class AIPlayer extends Actor {
+	selectDiscard(){
+		//logic for doing AI discards
+	}
 }
 
 // Tile class
@@ -376,6 +399,53 @@ class BasicAI {
 // ###########    BASIC CALC FUNCTIONS    ############################################
 // ###################################################################################
 
+function checkSik(tile, hand){
+	return 0
+}
+
+function checkPong(drawnTile, hand){
+	// pong takes a drawn tile, and a hand as inputs, and checks if a valid pong can be created with the drawn tile.
+	// pong returns 0 if no pong can be formed, 1 if a pong can be melded, and 2 if a gong can be melded. 
+	const filteredHand = hand.filter(tile => tile.number === drawnTile.number && tile.suit === drawnTile.suit);
+	return filteredHand.length >= 2 ? filteredHand.length-1 : 0;
+}
+
+function checkSeung(drawnTile, hand){
+	// seung takes a drawn tile, and a hand as inputs, and checks if a valid seung can be created with the drawn tile.
+	// seung returns a 4 element array.
+	// result[0] is true if a valid seung can be formed, false if not
+	// result[1], result[2], and result[3] represent the starting number of valid sequences where the drawn tile
+	// is the last, middle, and first tile of the sequence respectively. 
+	
+	//initialise result
+	const result=[false, 0, 0, 0];
+	
+	// No seung if not suit with number
+	const numSuits = ['bamboo', 'character', 'dot']
+	if (!numSuits.includes(drawnTile.suit)){
+		return result;
+	}
+	
+	// Make list of numbers
+	const suited = hand
+		.filter(tile => tile.suit === drawnTile.suit)
+		.map(tile => tile.number)
+	
+	if (suited.includes(drawnTile.number-2) && suited.includes(drawnTile.number-1)){
+		result[0] = true;
+		result[1] = drawnTile.number-2;
+	}
+	if (suited.includes(drawnTile.number-1) && suited.includes(drawnTile.number+1)){
+		result[0] = true;
+		result[2] = drawnTile.number-1;
+	}
+	if (suited.includes(drawnTile.number+1) && suited.includes(drawnTile.number+2)){
+		result[0] = true;
+		result[3] = drawnTile.number;
+	}
+	
+	return result;
+}
 
 
 
